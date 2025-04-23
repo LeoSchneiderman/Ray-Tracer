@@ -14,4 +14,8 @@ public class Vector {
     public static float magnitude(float[] v) {
         return (float) Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
     }
+    
+    public static float[] subtract(float[] a, float[] b) {
+    	return new float[] {a[0] - b[0], a[1] - b[1], a[2] - b[2]};
+    }
 }
