@@ -20,22 +20,32 @@ public class Main extends PApplet {
     	display();
     }
     
+    public void draw() {
+    	bodies.get(1).centerOfMass[0] += 0.1;
+    	display();
+    }
+    
     void display() {
     	loadPixels();
+		float aspectRatio = (float) width / height;
+		float scale = (float) Math.tan(FOV / 2);
     	for(int x = 0; x < width; x++) {
     		for(int y = 0; y < height; y++) {
-    			Ray ray = new Ray(x, y);
-    			pixels[x + y * width] = ray.getColor(bodies);
+    			float dx = (2 * ((x + 0.5f) / width) - 1) * aspectRatio * scale;
+    			float dy = (1 - 2 * ((y + 0.5f) / height)) * scale;
+    			float[] vector = new float[] {dx, dy, 1};
+    			Ray ray = new Ray(vector);
+    			pixels[x + y * width] = ray.getColor(bodies, 1);
     		}
     	}
-    	updatePixels();
+    updatePixels();
     }
     
     void makeObjects() {
     	bodies = new ArrayList<Body>();
-    	sun = new LightSource(0, -100000, 0, 1000000);
-    	bodies.add(new Sphere(0, 0, 30, 5, new Texture((float)0.5)));
-    	bodies.add(new Sphere(0, -10, 30, 3, new Texture((float)0.5)));
+    	sun = new LightSource(0, -100000, 100000, 1000000);
+    	bodies.add(new Sphere(0, 0, 60, 10, new Texture((float)0.5)));
+    	bodies.add(new Sphere(-30, 0, 30, 10, new Texture((float)0.5)));
     }
     
     

@@ -20,17 +20,13 @@ public class Sphere extends Body{
 		return SphereRender.getZ(this, ray);
 	}
 	
-	public float[] getReflectionDirection(Ray ray) {
-		return SphereRender.getReflectionDirection(this, ray);
+	public float[] getReflectionDirection(Ray ray, float[] normal, float z) {
+		return SphereRender.getReflectionDirection(this,  ray,  normal, z);
 	}
 	
-	public float[] getNormalAt(Ray ray, float t) {
-		return SphereRender.getNormalAt(this, ray, t);
+	public float[] getNormalAt(Ray ray, float z) {
+		return SphereRender.getNormalAt(this, ray, z);
 	}
 
-	
-	public float[] getReflectionLocation(Ray ray, float z) {
-		return Render.getReflectionLocation(ray, z);
-	}
 
 }

@@ -1,12 +1,9 @@
 package bodies;
 
-public class LightSource {
+public class LightSource extends Body{
 	public LightSource(float x, float y, float z, float brightness){
-		this.x = x;
-		this.y = y;
-		this.z = z;
 		this.brightness = brightness;
+		centerOfMass = new float[]{x, y, z};
 	}
-	public float brightness;
-	public float x, y, z;
+	float  brightness;
 }

@@ -9,7 +9,7 @@ public class Body {
 		return Float.POSITIVE_INFINITY;
 	}
 	
-	public float[] getReflectionDirection(Ray ray) {
+	public float[] getReflectionDirection(Ray ray, float[] normal, float z) {
 		return null;
 	}
 	

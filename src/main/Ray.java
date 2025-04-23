@@ -1,64 +1,77 @@
 package main;
 import java.util.ArrayList;
 import bodies.*;
+import myMath.*;
+import render.Render;
 
 public class Ray {
-	public int x, y;// (0, 0) is the center of the screen
-	public int pixelX, pixelY;
-
-	private static final int MIN_BRIGHTNESS = 20;
-	private static final float MAX_RENDER_DEPTH = 1000f;
-
-	public Ray(int x, int y) {
-		this.x = x - Main.Width / 2;
-		this.y = y - Main.Height / 2;
-		this.pixelX = x;
-		this.pixelY = y;
+	private int color(int r, int g, int b) {
+		return Main.instance.color(r, g, b);
 	}
-	
+	private int lerpColor(int a, int b, float t) {
+		return Main.instance.lerpColor(a, b, t);
+	}
 
-	public int getColor(ArrayList<Body> bodies) {
-		float z = Float.POSITIVE_INFINITY;
+	public float[] direction;
+	public float[] origin;
+
+	public Ray(float[] direction) {
+		this.direction = Vector.normalize(direction);
+		this.origin = new float[] {0, 0, 0};
+	}
+
+	public Ray(float[] origin, float[] direction) {
+		this(Vector.normalize(direction));
+		this.origin = origin;
+	}
+
+	public int getColor(ArrayList<Body> bodies, int numLeft) {
+		int skyColor = color(0, 0, 255);
+		int ambientColor = color(40, 40, 40);  // soft gray ambient light
+
 		Body bodyHit = null;
+		float closestZ = Float.POSITIVE_INFINITY;
 
-		// Find closest body
 		for (Body body : bodies) {
-			float tempZ = body.getZ(this);
-			if (tempZ < z) {
-				z = tempZ;
+			float z = body.getZ(this);
+			if (z < closestZ && z > 0.001f) {
+				closestZ = z;
 				bodyHit = body;
 			}
 		}
 
-		if (bodyHit == null) return 0;
+		if (bodyHit == null) return skyColor;
 
-		float[] reflectionDir = normalize(bodyHit.getReflectionDirection(this));
-		float[] normal = bodyHit.getNormalAt(this, z);
-		float[] reflectionLoc = bodyHit.getReflectionLocation(this, z);
-		float[] toSun = {
-			Main.instance.sun.x - reflectionLoc[0],
-			Main.instance.sun.y - reflectionLoc[1],
-			Main.instance.sun.z - reflectionLoc[2]
+		float[] normal = bodyHit.getNormalAt(this, closestZ);
+		float[] reflectionDirection = bodyHit.getReflectionDirection(this, normal, closestZ);
+		float[] newOrigin = Render.getPoint(this, closestZ);
+		Ray newRay = new Ray(newOrigin, reflectionDirection);
+
+		if (numLeft <= 0) return ambientColor;
+
+		int newColor = newRay.getColor(bodies, numLeft - 1);
+		if (newColor == skyColor) {
+			int lightColor = getLineLightColor(newOrigin, normal);
+			// Blend ambient + directional light
+			return lerpColor(lightColor, ambientColor, 0.5f);
+		}
+
+		// Mix reflected color with black, and also blend in ambient light
+		int darkened = lerpColor(newColor, color(0, 0, 0), 0.5f);
+		return lerpColor(darkened, ambientColor, 0.3f);
+	}
+
+	public int getLineLightColor(float[] point, float[] normal) {
+		LightSource sun = Main.instance.sun;
+		float[] lineLight = new float[] {
+			point[0] - sun.centerOfMass[0],
+			point[1] - sun.centerOfMass[1],
+			point[2] - sun.centerOfMass[2]
 		};
-		float  distToSun = magnitude(toSun);
-		toSun = normalize(toSun);
-		float cos = dot(normal, toSun);
-		cos = Math.max(0, cos); // Prevent negative brightness
-
-		int brightness = Math.max(MIN_BRIGHTNESS, (int)(255 * cos));
-		return Main.instance.color(brightness);
-	}
-
-	private float magnitude(float[] v) {
-		return (float) Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-	}
-
-	private float[] normalize(float[] v) {
-		float mag = magnitude(v);
-		return mag == 0 ? new float[]{0, 0, 0} : new float[]{v[0]/mag, v[1]/mag, v[2]/mag};
-	}
-
-	private float dot(float[] a, float[] b) {
-		return a[0]*b[0] + a[1]*b[1] + a[2]*b[2];
+		lineLight = Vector.normalize(lineLight);
+		normal = Vector.normalize(normal);
+		float cos = Math.max(0, Vector.dot(normal, lineLight));
+		int brightness = (int)(255 * cos);
+		return color(brightness, brightness, brightness);
 	}
 }
