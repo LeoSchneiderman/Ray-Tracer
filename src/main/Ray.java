@@ -3,7 +3,8 @@ import java.util.ArrayList;
 import bodies.*;
 
 public class Ray {
-	public int x, y; // (0, 0) is the center of the screen
+	public int x, y;// (0, 0) is the center of the screen
+	public int pixelX, pixelY;
 
 	private static final int MIN_BRIGHTNESS = 20;
 	private static final float MAX_RENDER_DEPTH = 1000f;
@@ -11,9 +12,12 @@ public class Ray {
 	public Ray(int x, int y) {
 		this.x = x - Main.Width / 2;
 		this.y = y - Main.Height / 2;
+		this.pixelX = x;
+		this.pixelY = y;
 	}
+	
 
-	public void render(ArrayList<Body> bodies) {
+	public int getColor(ArrayList<Body> bodies) {
 		float z = Float.POSITIVE_INFINITY;
 		Body bodyHit = null;
 
@@ -26,7 +30,7 @@ public class Ray {
 			}
 		}
 
-		if (bodyHit == null) return;
+		if (bodyHit == null) return 0;
 
 		float[] reflectionDir = normalize(bodyHit.getReflectionDirection(this));
 		float[] normal = bodyHit.getNormalAt(this, z);
@@ -42,14 +46,7 @@ public class Ray {
 		cos = Math.max(0, cos); // Prevent negative brightness
 
 		int brightness = Math.max(MIN_BRIGHTNESS, (int)(255 * cos));
-		int screenX = x + Main.Width / 2;
-		int screenY = y + Main.Height / 2;
-		int i = screenX + screenY * Main.Width;
-
-		if (z < MAX_RENDER_DEPTH && i >= 0 && i < Main.instance.pixels.length) {
-			Main.instance.pixels[i] = Main.instance.color(brightness, brightness, brightness);
-			System.out.println(cos);
-		}
+		return Main.instance.color(brightness);
 	}
 
 	private float magnitude(float[] v) {

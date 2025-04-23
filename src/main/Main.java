@@ -25,7 +25,7 @@ public class Main extends PApplet {
     	for(int x = 0; x < width; x++) {
     		for(int y = 0; y < height; y++) {
     			Ray ray = new Ray(x, y);
-    			ray.render(bodies);
+    			pixels[x + y * width] = ray.getColor(bodies);
     		}
     	}
     	updatePixels();
