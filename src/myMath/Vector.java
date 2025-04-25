@@ -18,4 +18,21 @@ public class Vector {
     public static float[] subtract(float[] a, float[] b) {
     	return new float[] {a[0] - b[0], a[1] - b[1], a[2] - b[2]};
     }
+    
+    public static float[] getPointAtZ(float[] vector, float z) {
+    	float scale = z / vector[2];
+    	float a = vector[0] * scale;
+    	float b = vector[1] * scale;
+    	float c = vector[2] * scale;
+    	return new float[] {a, b, c};
+    }
+
+    public static float[] cross(float[] a, float[] b) {
+        return new float[] {
+            a[1] * b[2] - a[2] * b[1],
+            a[2] * b[0] - a[0] * b[2],
+            a[0] * b[1] - a[1] * b[0]
+        };
+    }
+
 }
